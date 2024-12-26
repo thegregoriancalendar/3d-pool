@@ -8,6 +8,12 @@ public static class StateHandler
 {
     public static GameObject[] arrows = new GameObject[4];
     public static float pathSpacing = 0.1f;
+    public static int score = 0;
+    public static GameObject scoreText;
+
+    public static float movementThreshold = 1f;
+
+    public static List<GameObject> ballsack = new List<GameObject>();
 
     public enum GameState
     {
@@ -17,6 +23,8 @@ public static class StateHandler
         CUE_RELEASED,
         BALLS_MOVING
     }
+
+    public static bool player1Turn = true;
 
     public static Ray[] paths = new Ray[2];
     public static float[] lengths = new float[2];
@@ -81,9 +89,12 @@ public static class StateHandler
         float currentLength = 0;
         while (currentRayNum < paths.Length)
         {
-            GameObject dingle = Object.Instantiate(predictionIndicator, paths[currentRayNum].GetPoint(currentLength), Quaternion.identity);
-            dingle.GetComponent<Renderer>().material.color = new Color(1, 1, 0, (lengths[currentRayNum] - currentLength) / lengths.Sum());
-            dingleList.Add(dingle);
+            if (currentLength < lengths[currentRayNum])
+            {
+                GameObject dingle = Object.Instantiate(predictionIndicator, paths[currentRayNum].GetPoint(currentLength), Quaternion.identity);
+                dingle.GetComponent<Renderer>().material.color = new Color(1, 1, 0, (lengths[currentRayNum] - currentLength) / lengths.Sum());
+                dingleList.Add(dingle);
+            }
             currentLength += pathSpacing;
             if (currentLength > lengths[currentRayNum])
             {
@@ -92,5 +103,25 @@ public static class StateHandler
             }
         }
         
+    }
+
+    public static float getNetMovement()
+    {
+        float totalVelocity = 0;
+        foreach (GameObject ball in ballsack)
+        {
+            totalVelocity += ball.GetComponent<Rigidbody>().velocity.sqrMagnitude;
+        }
+        return totalVelocity;
+    }
+
+    public static void haltBallMovement()
+    {
+        foreach (GameObject ball in ballsack)
+        {
+            ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            ball.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            ball.GetComponent<Rigidbody>().rotation = Quaternion.identity;
+        }
     }
 }

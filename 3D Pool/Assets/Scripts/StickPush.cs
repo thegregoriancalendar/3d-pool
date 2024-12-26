@@ -5,11 +5,11 @@ using UnityEngine;
 public class StickPush : MonoBehaviour
 {
     Vector3 initMousePos;
+    float maxDragDistance = 2f;
     float defaultDistance = -1.5f;
-    float maxDragDistance = 1.2f;
     bool released = false;
     float releaseAcceleration = 40f;
-    float releaseVelocity;
+    public float releaseVelocity;
     float ballRadius;
     float thisSize;
     int ticksSinceChange = 0;
@@ -29,7 +29,7 @@ public class StickPush : MonoBehaviour
 
     private void Update()
     {
-        if (StateHandler.currentState != StateHandler.GameState.SHOOT_CUE)
+        if (StateHandler.currentState != StateHandler.GameState.SHOOT_CUE && StateHandler.currentState != StateHandler.GameState.CUE_RELEASED)
         {
             ticksSinceChange = 0;
             return;
@@ -55,6 +55,7 @@ public class StickPush : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             released = true;
+            StateHandler.currentState = StateHandler.GameState.CUE_RELEASED;
         }
 
         if (released)
@@ -66,6 +67,7 @@ public class StickPush : MonoBehaviour
         if (transform.localPosition.z > -2 * ballRadius)
         {
             released = false;
+            StateHandler.currentState = StateHandler.GameState.BALLS_MOVING;
             GetComponentInParent<Rigidbody>().velocity = transform.TransformVector(Vector3.up * releaseVelocity);
             Destroy(gameObject);
         }
