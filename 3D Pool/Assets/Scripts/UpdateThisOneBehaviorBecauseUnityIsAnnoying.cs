@@ -26,15 +26,20 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
         {
             for (int j = 0; j <= i; j++)
             {
-                StateHandler.ballsack.Add(Instantiate(ball, new Vector3(i, 1, j - i*0.5f), Quaternion.identity));
+                GameObject currentBall = Instantiate(ball, new Vector3(i, 1, j - i * 0.5f), Quaternion.identity);
+
+                Destroy(currentBall.GetComponent<BallSelect>());
+                currentBall.GetComponent<Renderer>().material.color = Color.HSVToRGB(Random.Range(0f,1f), 1f, 0.5f);
+
+                StateHandler.ballsack.Add(currentBall);
             }
         }
 
         //pockets
-        Instantiate(hole, new Vector3(8.75f, 1, 8.75f), Quaternion.identity);
-        Instantiate(hole, new Vector3(-8.75f, 1, 8.75f), Quaternion.identity);
-        Instantiate(hole, new Vector3(8.75f, 1, -8.75f), Quaternion.identity);
-        Instantiate(hole, new Vector3(-8.75f, 1, -8.75f), Quaternion.identity);
+        StateHandler.holes[0] = Instantiate(hole, new Vector3(8.75f, 1, 8.75f), Quaternion.identity);
+        StateHandler.holes[1] = Instantiate(hole, new Vector3(-8.75f, 1, 8.75f), Quaternion.identity);
+        StateHandler.holes[2] = Instantiate(hole, new Vector3(8.75f, 1, -8.75f), Quaternion.identity);
+        StateHandler.holes[3] = Instantiate(hole, new Vector3(-8.75f, 1, -8.75f), Quaternion.identity);
 
     }
 
@@ -52,7 +57,6 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
                 StateHandler.player1Turn = !StateHandler.player1Turn;
             }
 
-            Debug.Log(StateHandler.getNetMovement());
         }
 
         if (StateHandler.currentState == StateHandler.GameState.SELECT_BALL) {

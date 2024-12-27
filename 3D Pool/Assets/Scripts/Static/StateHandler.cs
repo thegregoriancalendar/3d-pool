@@ -8,12 +8,19 @@ public static class StateHandler
 {
     public static GameObject[] arrows = new GameObject[4];
     public static float pathSpacing = 0.1f;
+
+    // score stuff
+
     public static int score = 0;
     public static GameObject scoreText;
 
-    public static float movementThreshold = 1f;
+    public static float movementThreshold = 1f; // total movement threshold below which balls will halt and gamestate will progress
 
-    public static List<GameObject> ballsack = new List<GameObject>();
+    public static List<GameObject> ballsack = new List<GameObject>(); // list of all balls in scene
+
+    public static GameObject[] holes = new GameObject[4];
+
+    // gamestate stuff
 
     public enum GameState
     {
@@ -25,15 +32,18 @@ public static class StateHandler
     }
 
     public static bool player1Turn = true;
+    public static bool singlePlayer = false;
+    public static GameState currentState = GameState.SELECT_BALL;
+
+    // ball path planner 
 
     public static Ray[] paths = new Ray[2];
     public static float[] lengths = new float[2];
 
-    public static GameState currentState = GameState.SELECT_BALL;
-
     public static GameObject predictionIndicator;
-
     private static List<GameObject> dingleList = new List<GameObject>();
+
+    // UTILITY METHODS
 
     public static void shootCue()
     {
@@ -62,6 +72,8 @@ public static class StateHandler
             }
         }
     }
+
+    // ball path planner
 
     public static void updatePaths()
     {
@@ -105,6 +117,8 @@ public static class StateHandler
         
     }
 
+    // cycling gamestate for player to cue
+
     public static float getNetMovement()
     {
         float totalVelocity = 0;
@@ -123,5 +137,31 @@ public static class StateHandler
             ball.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             ball.GetComponent<Rigidbody>().rotation = Quaternion.identity;
         }
+    }
+
+    // ai behavior
+
+    public static float directionToHit()
+    {
+        List<GameObject> candidates = new List<GameObject>();
+        foreach (GameObject hole in holes)
+        {
+            foreach (GameObject ball in ballsack)
+            {
+                if (ball.GetComponent<BallSelect>() == null)
+                {
+                    Ray ray = new Ray(ball.transform.position, hole.transform.position - ball.transform.position);
+                    if (Physics.Raycast(ray, Mathf.Infinity, 7))
+                    {
+                        continue;
+                    }
+
+                    candidates.Add(ball);
+                }
+            }
+        }
+
+        // if no valid hit can be found, perform random hit
+        return Random.Range(0, 2 * Mathf.PI);
     }
 }
