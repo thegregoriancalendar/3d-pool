@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
@@ -20,16 +21,70 @@ public class CameraMovement : MonoBehaviour
     float camSens = 0.2f; //How sensitive it with mouse
     private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
     private float totalRun = 1.0f;
-    
 
+    public float interpDamping = 5.0f;
+
+    Pose[] camPoses = new Pose[3];
+    static string[] camModes = new string[3];
+
+    public static int currentPose = 2;
+
+
+    // 2 variables for LITERALLY THE EXACT SAME THING, EXCEPT I HAD TO MAKE ONE STATIC.
+    public GameObject camModeText;
+    public static GameObject thisIsStupid;
+
+    private void Start()
+    {
+        camPoses[0] = new Pose(new Vector3(0, 5, 0), Quaternion.Euler(0, 0, -90)); // track cam
+        camPoses[1] = new Pose(new Vector3(0, 18, 0), Quaternion.Euler(90, 0, -90)); // static cam
+        camPoses[2] = new Pose(gameObject.transform.position, gameObject.transform.rotation); // free cam
+
+        camModes[0] = "Track";
+        camModes[1] = "Static";
+        camModes[2] = "Free";
+
+        thisIsStupid = camModeText;
+    }
     void Update()
     {
+        // update cam position
+
+        transform.position = Vector3.Slerp(transform.position, camPoses[currentPose].position, Time.deltaTime * interpDamping);
+        transform.rotation = Quaternion.Slerp(transform.rotation, camPoses[currentPose].rotation, Time.deltaTime * interpDamping);
+
+        // select camerapos
+
+        if (Input.GetMouseButtonDown(2) || Input.GetKeyDown(KeyCode.Tab))
+        {
+            currentPose--;
+            if (currentPose < 0)
+            {
+                currentPose = camPoses.Length - 1;
+            }
+
+            updateCamText();
+        }
+
+
+        // other cam logic
+        if (currentPose != 2)
+        {
+            camPoses[0].rotation = Quaternion.LookRotation(StateHandler.ballsack[0].transform.position - transform.position);
+            camPoses[2] = camPoses[0];
+
+            return;
+        }
+
+
+        // free cam logic
 
         lastMouse = Input.mousePosition - lastMouse;
         if (Input.GetMouseButton(1))
         {
             lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-            lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
+            lastMouse = new Vector3(camPoses[2].rotation.eulerAngles.x + lastMouse.x, camPoses[2].rotation.eulerAngles.y + lastMouse.y, 0);
+            camPoses[2].rotation = Quaternion.Euler(lastMouse);
             transform.eulerAngles = lastMouse;
         }
         
@@ -58,7 +113,8 @@ public class CameraMovement : MonoBehaviour
             }
 
             p *= Time.deltaTime;
-            transform.Translate(p, Space.World);
+            camPoses[2].position += p;
+            // transform.Translate(p, Space.World);
 
         }
     }
@@ -105,5 +161,10 @@ public class CameraMovement : MonoBehaviour
             p_Velocity += new Vector3(0, -1, 0);
         }
         return p_Velocity;
+    }
+
+    public static void updateCamText()
+    {
+        thisIsStupid.GetComponent<TMP_Text>().text = "Camera Mode: " + camModes[currentPose];
     }
 }

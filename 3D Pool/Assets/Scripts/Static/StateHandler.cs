@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public static class StateHandler
@@ -20,7 +21,12 @@ public static class StateHandler
 
     public static GameObject[] holes = new GameObject[4];
 
+    public static float ballRadius;
+
     // gamestate stuff
+
+    public static bool paused = false;
+    public static float sfxvolume;
 
     public enum GameState
     {
@@ -32,8 +38,10 @@ public static class StateHandler
     }
 
     public static bool player1Turn = true;
-    public static bool singlePlayer = false;
+    public static bool singlePlayer = true;
     public static GameState currentState = GameState.SELECT_BALL;
+
+    public static bool hasScratched = false;
 
     // ball path planner 
 
@@ -143,7 +151,7 @@ public static class StateHandler
 
     public static float directionToHit()
     {
-        List<GameObject> candidates = new List<GameObject>();
+        List<Vector3> candidates = new List<Vector3>();
         foreach (GameObject hole in holes)
         {
             foreach (GameObject ball in ballsack)
@@ -151,17 +159,86 @@ public static class StateHandler
                 if (ball.GetComponent<BallSelect>() == null)
                 {
                     Ray ray = new Ray(ball.transform.position, hole.transform.position - ball.transform.position);
-                    if (Physics.Raycast(ray, Mathf.Infinity, 7))
+                    if (Physics.Raycast(ray, Vector3.Magnitude(hole.transform.position - ball.transform.position), 7))
                     {
                         continue;
                     }
 
-                    candidates.Add(ball);
+                    Vector3 targetPoint = ray.GetPoint(-ballRadius);
+
+                    candidates.Add(targetPoint - ballsack[0].transform.position);
                 }
             }
         }
 
+        if (candidates.Count == 0)
+        {
+            return Random.Range(0f, 2 * Mathf.PI);
+        }
+
+        Vector3 shootVector = candidates[Random.Range(0, candidates.Count)];
+
+        return Mathf.Atan2(shootVector.y, shootVector.x);
+
         // if no valid hit can be found, perform random hit
-        return Random.Range(0, 2 * Mathf.PI);
+    }
+
+
+    public static Vector3 scratchPlacement()
+    {
+        foreach (GameObject hole in holes)
+        {
+            foreach (GameObject ball in ballsack)
+            {
+                if (ball.GetComponent<BallSelect>() == null) 
+                {
+                    // check space between ball and hole
+                    Ray ray = new Ray(ball.transform.position, hole.transform.position - ball.transform.position);
+                    if (Physics.Raycast(ray, Vector3.Magnitude(hole.transform.position - ball.transform.position), 7))
+                    {
+                        continue;
+                    }
+
+                    // check space behind ball
+
+                    Ray backRay = new Ray(ball.transform.position, ball.transform.position - hole.transform.position);
+                    if (Physics.Raycast(ray, ballRadius * 4, 7))
+                    {
+                        continue;
+                    }
+
+                    // if available get point behind ball
+
+                    return backRay.GetPoint(ballRadius * 3);
+                }
+            }
+        }
+
+        // if no point works get a random free spot
+
+        return randomFreeSpot();
+    }
+
+    public static Vector3 randomFreeSpot()
+    {
+        Vector3 spot = new Vector3(Random.Range(-8.75f, 8.75f), 1, Random.Range(-8.75f, 8.75f));
+        while (isSpotTaken(spot))
+        {
+            spot = new Vector3(Random.Range(-8.75f, 8.75f), 1, Random.Range(-8.75f, 8.75f));
+        }
+
+        return spot;
+    }
+
+    public static bool isSpotTaken(Vector3 spot)
+    {
+        foreach (GameObject ball in ballsack)
+        {
+            if (Vector3.Distance(ball.transform.position, spot) < ballRadius)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

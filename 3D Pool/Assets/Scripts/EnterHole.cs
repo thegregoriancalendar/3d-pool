@@ -13,10 +13,18 @@ public class EnterHole : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        StateHandler.ballsack.Remove(other.gameObject);
-        Destroy(other.gameObject);
-        StateHandler.score++;
-        StateHandler.scoreText.GetComponent<TMP_Text>().text = "Score: " + StateHandler.score.ToString();
+        if (other.gameObject.GetComponent<BallSelect>() != null)
+        {
+            other.gameObject.transform.position = StateHandler.scratchPlacement();
+        } 
+        else
+        {
+            StateHandler.ballsack.Remove(other.gameObject);
+            Destroy(other.gameObject);
+            StateHandler.score++;
+            StateHandler.scoreText.GetComponent<TMP_Text>().text = "Score: " + StateHandler.score.ToString();
+            GameObject.Find("ding").GetComponent<AudioSource>().Play();
+        }
     }
 
     // Update is called once per frame

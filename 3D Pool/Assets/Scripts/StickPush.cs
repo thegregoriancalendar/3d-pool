@@ -42,20 +42,23 @@ public class StickPush : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (!StateHandler.paused)
         {
-            initMousePos = Input.mousePosition - getObjectPos();
-        }
+            if (Input.GetMouseButtonDown(0))
+            {
+                initMousePos = Input.mousePosition - getObjectPos();
+            }
 
-        if (Input.GetMouseButton(0))
-        {
-            transform.localPosition = new Vector3(0, 0, scalingFunc(-Mathf.Abs(Camera.main.ScreenToWorldPoint(Input.mousePosition - initMousePos).z)));
-        }
+            if (Input.GetMouseButton(0))
+            {
+                transform.localPosition = new Vector3(0, 0, scalingFunc(-Mathf.Abs(Camera.main.ScreenToWorldPoint(Input.mousePosition - initMousePos).z)));
+            }
 
-        if (Input.GetMouseButtonUp(0))
-        {
-            released = true;
-            StateHandler.currentState = StateHandler.GameState.CUE_RELEASED;
+            if (Input.GetMouseButtonUp(0))
+            {
+                released = true;
+                StateHandler.currentState = StateHandler.GameState.CUE_RELEASED;
+            }
         }
 
         if (released)
@@ -69,6 +72,9 @@ public class StickPush : MonoBehaviour
             released = false;
             StateHandler.currentState = StateHandler.GameState.BALLS_MOVING;
             GetComponentInParent<Rigidbody>().velocity = transform.TransformVector(Vector3.up * releaseVelocity);
+            GameObject.Find("boom").GetComponent<AudioSource>().Play();
+            CameraMovement.currentPose = 0;
+            CameraMovement.updateCamText();
             Destroy(gameObject);
         }
     }

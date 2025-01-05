@@ -15,6 +15,7 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
 
     void Start()
     {
+        StateHandler.ballRadius = ball.GetComponent<SphereCollider>().radius;
         StateHandler.scoreText = scoreText;
         StateHandler.predictionIndicator = predictionIndicator;
 
@@ -47,6 +48,7 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
     {
         StateHandler.shootCue();
     }
+
     public void Update()
     {
         if (StateHandler.currentState == StateHandler.GameState.BALLS_MOVING)
@@ -71,5 +73,15 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
         }
 
         prevState = StateHandler.currentState;
+    }
+
+    public void deScratch()
+    {
+        StateHandler.hasScratched = false;
+
+
+
+        Instantiate(ball, new Vector3(-2, 1, 0), Quaternion.identity);
+
     }
 }
