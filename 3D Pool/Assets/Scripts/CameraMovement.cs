@@ -70,7 +70,15 @@ public class CameraMovement : MonoBehaviour
         // other cam logic
         if (currentPose != 2)
         {
-            camPoses[0].rotation = Quaternion.LookRotation(StateHandler.ballsack[0].transform.position - transform.position);
+            if (StateHandler.ballsack[0] != null)
+            {
+                camPoses[0].rotation = Quaternion.LookRotation(StateHandler.ballsack[0].transform.position - transform.position);
+            }
+            else
+            {
+                camPoses[0].rotation = Quaternion.LookRotation(StateHandler.getFastestBall().transform.position - transform.position);
+            }
+
             camPoses[2] = camPoses[0];
 
             return;

@@ -132,6 +132,11 @@ public static class StateHandler
         float totalVelocity = 0;
         foreach (GameObject ball in ballsack)
         {
+            if (ball == null)
+            {
+                continue;
+            }
+
             totalVelocity += ball.GetComponent<Rigidbody>().velocity.sqrMagnitude;
         }
         return totalVelocity;
@@ -141,6 +146,11 @@ public static class StateHandler
     {
         foreach (GameObject ball in ballsack)
         {
+            if (ball == null)
+            {
+                continue;
+            }
+
             ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
             ball.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             ball.GetComponent<Rigidbody>().rotation = Quaternion.identity;
@@ -149,14 +159,15 @@ public static class StateHandler
 
     // ai behavior
 
-    public static float directionToHit()
+    public static Vector3 directionToHit()
     {
+
         List<Vector3> candidates = new List<Vector3>();
         foreach (GameObject hole in holes)
         {
             foreach (GameObject ball in ballsack)
             {
-                if (ball.GetComponent<BallSelect>() == null)
+                if (ball != ballsack[0])
                 {
                     Ray ray = new Ray(ball.transform.position, hole.transform.position - ball.transform.position);
                     if (Physics.Raycast(ray, Vector3.Magnitude(hole.transform.position - ball.transform.position), 7))
@@ -164,7 +175,7 @@ public static class StateHandler
                         continue;
                     }
 
-                    Vector3 targetPoint = ray.GetPoint(-ballRadius);
+                    Vector3 targetPoint = ray.GetPoint(-ballRadius * 2);
 
                     candidates.Add(targetPoint - ballsack[0].transform.position);
                 }
@@ -173,12 +184,22 @@ public static class StateHandler
 
         if (candidates.Count == 0)
         {
-            return Random.Range(0f, 2 * Mathf.PI);
+            float idkNum = Random.Range(0f, 2f * Mathf.PI);
+            return new Vector3(Mathf.Sin(idkNum), 0, Mathf.Cos(idkNum));
         }
 
-        Vector3 shootVector = candidates[Random.Range(0, candidates.Count)];
 
-        return Mathf.Atan2(shootVector.y, shootVector.x);
+
+        //Vector3 shootVector = candidates[Random.Range(0, candidates.Count)];
+        Vector3 shootVector = candidates[0];
+
+        Debug.Log(shootVector + ballsack[0].transform.position);
+
+        return shootVector;
+
+        
+
+        //return Mathf.Atan2(shootVector.x, -shootVector.z);
 
         // if no valid hit can be found, perform random hit
     }
@@ -190,11 +211,11 @@ public static class StateHandler
         {
             foreach (GameObject ball in ballsack)
             {
-                if (ball.GetComponent<BallSelect>() == null) 
+                if (ball != ballsack[0]) 
                 {
                     // check space between ball and hole
                     Ray ray = new Ray(ball.transform.position, hole.transform.position - ball.transform.position);
-                    if (Physics.Raycast(ray, Vector3.Magnitude(hole.transform.position - ball.transform.position), 7))
+                    if (ballCast(ray, Vector3.Magnitude(hole.transform.position - ball.transform.position), 8))
                     {
                         continue;
                     }
@@ -202,7 +223,7 @@ public static class StateHandler
                     // check space behind ball
 
                     Ray backRay = new Ray(ball.transform.position, ball.transform.position - hole.transform.position);
-                    if (Physics.Raycast(ray, ballRadius * 4, 7))
+                    if (ballCast(ray, ballRadius * 4))
                     {
                         continue;
                     }
@@ -215,16 +236,16 @@ public static class StateHandler
         }
 
         // if no point works get a random free spot
-
+        Debug.Log("tweaking out");
         return randomFreeSpot();
     }
 
     public static Vector3 randomFreeSpot()
     {
-        Vector3 spot = new Vector3(Random.Range(-8.75f, 8.75f), 1, Random.Range(-8.75f, 8.75f));
+        Vector3 spot = new Vector3(Random.Range(-8.0f, 8.0f), 1, Random.Range(-8.0f, 8.0f));
         while (isSpotTaken(spot))
         {
-            spot = new Vector3(Random.Range(-8.75f, 8.75f), 1, Random.Range(-8.75f, 8.75f));
+            spot = new Vector3(Random.Range(-8.0f, 8.0f), 1, Random.Range(-8.0f, 8.0f));
         }
 
         return spot;
@@ -240,5 +261,56 @@ public static class StateHandler
             }
         }
         return true;
+    }
+
+    public static GameObject getFastestBall()
+    {
+        int fastestIndex = 0;
+        float fastest = 0;
+        for (int i = 0; i < ballsack.Count; i++)
+        {
+            if (ballsack[i] == null)
+            {
+                continue;
+            }
+
+            if (Vector3.SqrMagnitude(ballsack[i].GetComponent<Rigidbody>().velocity) >= fastest)
+            {
+                fastest = Vector3.SqrMagnitude(ballsack[i].GetComponent<Rigidbody>().velocity);
+                fastestIndex = i;
+            }
+        }
+
+        return ballsack[fastestIndex];
+    }
+
+
+    // casting ball instead of just ray
+
+    static bool ballCast(Ray ray, float maxDistance, int layerMask)
+    {
+        Ray leftRay = new Ray(ray.origin + ballRadius * Vector3.Cross(Vector3.Normalize(ray.direction), Vector3.up), ray.direction);
+        Ray rightRay = new Ray(ray.origin + ballRadius * Vector3.Cross(Vector3.Normalize(ray.direction), Vector3.down), ray.direction);
+
+        if (Physics.Raycast(ray, maxDistance, layerMask) || Physics.Raycast(leftRay, maxDistance - ballRadius, layerMask) || Physics.Raycast(rightRay, maxDistance - ballRadius, layerMask))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // overload for no layermask
+    static bool ballCast(Ray ray, float maxDistance)
+    {
+        Ray leftRay = new Ray(ray.origin + ballRadius * Vector3.Cross(Vector3.Normalize(ray.direction), Vector3.up), ray.direction);
+        Ray rightRay = new Ray(ray.origin + ballRadius * Vector3.Cross(Vector3.Normalize(ray.direction), Vector3.down), ray.direction);
+
+        if (Physics.Raycast(ray, maxDistance) || Physics.Raycast(leftRay, maxDistance - ballRadius) || Physics.Raycast(rightRay, maxDistance - ballRadius))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

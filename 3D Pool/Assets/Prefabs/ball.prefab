@@ -119,9 +119,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf6297c1c7828b446952bc9182c43626, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stick: {fileID: 7376796464246070199, guid: 5b20ef5fae7843044aca29bac688248c, type: 3}
-  leftArrow: {fileID: 4729154575627148180, guid: b64f2a0605130d74594e8f7d5fb9375b, type: 3}
-  rightArrow: {fileID: 8397326378172495311, guid: 7b75d4b96ca6f1f40b61476d8e28f01e, type: 3}
+  stickPrefab: {fileID: 7376796464246070199, guid: 5b20ef5fae7843044aca29bac688248c, type: 3}
+  leftArrowPrefab: {fileID: 4729154575627148180, guid: b64f2a0605130d74594e8f7d5fb9375b, type: 3}
+  rightArrowPrefab: {fileID: 8397326378172495311, guid: 7b75d4b96ca6f1f40b61476d8e28f01e, type: 3}
+  stick: {fileID: 0}
+  leftArrow: {fileID: 0}
+  rightArrow: {fileID: 0}
 --- !u!54 &6745226259283026352
 Rigidbody:
   m_ObjectHideFlags: 0

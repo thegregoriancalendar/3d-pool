@@ -8,11 +8,14 @@ public class StickPush : MonoBehaviour
     float maxDragDistance = 2f;
     float defaultDistance = -1.5f;
     bool released = false;
-    float releaseAcceleration = 40f;
+    float releaseAcceleration = 40f; // 40f
     public float releaseVelocity;
     float ballRadius;
     float thisSize;
     int ticksSinceChange = 0;
+
+    float interpDamping = 1.0f;
+    float botThreshold = 0.9f; // percent of maxDragDistance needed for bot to release
 
     // Update is called once per frame
 
@@ -58,6 +61,18 @@ public class StickPush : MonoBehaviour
             {
                 released = true;
                 StateHandler.currentState = StateHandler.GameState.CUE_RELEASED;
+            }
+
+            // bot moving cue back and then releasing when threshold is passed
+            if (StateHandler.currentState == StateHandler.GameState.SHOOT_CUE && StateHandler.singlePlayer && !StateHandler.player1Turn)
+            {
+                transform.localPosition = Vector3.Lerp(transform.localPosition, new Vector3(0, 0, maxDragDistance), Time.deltaTime * interpDamping);
+                
+                if (transform.localPosition.z > maxDragDistance * botThreshold)
+                {
+                    released = true;
+                    StateHandler.currentState = StateHandler.GameState.CUE_RELEASED;
+                }
             }
         }
 

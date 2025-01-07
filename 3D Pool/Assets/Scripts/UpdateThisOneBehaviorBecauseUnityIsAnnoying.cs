@@ -13,8 +13,15 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
 
     private StateHandler.GameState prevState;
 
+    private float botTimer;
+
+    private Vector3 botDirection;
+
+
     void Start()
     {
+        botTimer = 0f;
+
         StateHandler.ballRadius = ball.GetComponent<SphereCollider>().radius;
         StateHandler.scoreText = scoreText;
         StateHandler.predictionIndicator = predictionIndicator;
@@ -51,12 +58,16 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
 
     public void Update()
     {
+        botTimer += Time.deltaTime;
+
         if (StateHandler.currentState == StateHandler.GameState.BALLS_MOVING)
         {
             if (StateHandler.getNetMovement() < StateHandler.movementThreshold)
             {
                 StateHandler.currentState = StateHandler.GameState.SELECT_BALL;
-                StateHandler.player1Turn = !StateHandler.player1Turn;
+                //StateHandler.player1Turn = !StateHandler.player1Turn;
+                StateHandler.player1Turn = false;
+                botTimer = 0f;
             }
 
         }
@@ -73,15 +84,49 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
         }
 
         prevState = StateHandler.currentState;
+
+
+        // bot logic
+
+        if (!StateHandler.player1Turn && StateHandler.singlePlayer)
+        {
+            switch (StateHandler.currentState)
+            {
+                case StateHandler.GameState.SELECT_BALL:
+                    if (botTimer < 1f) { break; }
+
+                    if (StateHandler.hasScratched)
+                    {
+                        deScratch();
+                    }
+
+                    if (botTimer > 2f)
+                    {
+                        StateHandler.ballsack[0].GetComponent<BallSelect>().selectTheBall();
+                        botDirection = StateHandler.directionToHit();
+                    }
+
+                    break;
+
+                case StateHandler.GameState.ROTATE_CUE:
+                    if (botTimer < 3f) { break; }
+
+                    bool movementFinished = StateHandler.ballsack[0].GetComponent<BallSelect>().botMove(botDirection);
+
+                    if (movementFinished && botTimer > 5f)
+                    {
+                        updateThisOneBehaviorBecauseUnityIsAnnoying(); //LMFAO
+                    }
+                    
+                    break;
+            }
+        }
     }
 
     public void deScratch()
     {
         StateHandler.hasScratched = false;
-
-
-
-        Instantiate(ball, new Vector3(-2, 1, 0), Quaternion.identity);
-
+        StateHandler.ballsack[0] = Instantiate(ball, StateHandler.scratchPlacement(), Quaternion.identity);
     }
+
 }
