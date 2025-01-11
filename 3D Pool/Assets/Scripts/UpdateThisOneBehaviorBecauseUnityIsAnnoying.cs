@@ -27,7 +27,7 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
         StateHandler.predictionIndicator = predictionIndicator;
 
         // cue ball
-        StateHandler.ballsack.Add(Instantiate(ball, new Vector3(-2, 1, 0), Quaternion.identity));
+        StateHandler.ballsack.Add(Instantiate(ball, new Vector3(-4, 1, 0), Quaternion.identity));
 
         // other balls
         for (int i = 0; i < 5; i++)
