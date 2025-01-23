@@ -892,4 +892,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fakeCam: {fileID: 1061948220}
   camDistance: 10
-  camSpeed: 10
+  camSpeed: 20

@@ -51,6 +51,7 @@ public class DrawTable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void OnPointerExit(PointerEventData eventData)
     {
         mouseIsOver = false;
+        addLineMode = false;
     }
 
     void Update()
@@ -62,7 +63,6 @@ public class DrawTable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             if (Input.GetMouseButtonDown(0))
             {
-
                 if (highlightCircle == null)
                 {
                     lines.Add(new Line(Input.mousePosition, transform));
@@ -77,6 +77,7 @@ public class DrawTable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
             if (Input.GetMouseButton(0))
             {
+
                 if (highlightCircle == null)
                 {
                     lines[lines.Count - 1].UpdateLine(Input.mousePosition, false);
@@ -92,23 +93,46 @@ public class DrawTable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
             if (Input.GetMouseButtonUp(0))
             {
-
-                addMeshVertices();
+                if (highlightCircle == null)
+                {
+                    addMeshVertices();
+                }
 
                 int len = poolTable.GetComponent<MeshFilter>().mesh.vertices.Length;
 
                 // change mesh orientation
 
-                Vector3 direction = poolTable.GetComponent<MeshFilter>().mesh.vertices[len - 4] - poolTable.GetComponent<MeshFilter>().mesh.vertices[len - 8];
+                Vector3 direction;
+
+                if (highlightCircle == null)
+                {
+                    direction = poolTable.GetComponent<MeshFilter>().mesh.vertices[len - 4] - poolTable.GetComponent<MeshFilter>().mesh.vertices[len - 8];
+                }
+                else
+                {
+                    direction = poolTable.GetComponent<MeshFilter>().mesh.vertices[0] - poolTable.GetComponent<MeshFilter>().mesh.vertices[len - 4];
+                }
+
                 Vector3 offset = Vector3.Normalize(Vector3.Cross(fakeCamera.transform.forward, direction)) * width;
 
                 Vector3[] vertices = poolTable.GetComponent<MeshFilter>().mesh.vertices;
 
-                vertices[len - 8] += offset;
-                vertices[len - 7] += offset;
+                if (highlightCircle == null)
+                {
+                    vertices[len - 8] += offset;
+                    vertices[len - 7] += offset;
 
-                vertices[len - 6] -= offset;
-                vertices[len - 5] -= offset;
+                    vertices[len - 6] -= offset;
+                    vertices[len - 5] -= offset;
+                } 
+                else
+                {
+                    vertices[3] += offset;
+                    vertices[2] += offset;
+
+                    vertices[1] -= offset;
+                    vertices[0] -= offset;
+                }
 
                 vertices[len - 4] += offset;
                 vertices[len - 3] += offset;
@@ -135,13 +159,34 @@ public class DrawTable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                                        2, 3, 7,
                                        7, 6, 2};
 
-                    for (int i = 0; i < triangles.Length; i++)
+                    if (highlightCircle  == null)
                     {
-                        triangles[i] += len - 9;
+                        for (int i = 0; i < triangles.Length; i++)
+                        {
+                            triangles[i] += len - 9;
+                        }
                     }
+                    else
+                    {
+                        for (int i = 0; i < triangles.Length; i++)
+                        {
+                            if (triangles[i] < 5)
+                            {
+                                triangles[i] += len - 5;
+                            }
+                            else
+                            {
+                                triangles[i] -= 5;
+                            }
+                        }
+                    }
+                    
 
                     poolTable.GetComponent<MeshFilter>().mesh.triangles = addElementsToArray<int>(poolTable.GetComponent<MeshFilter>().mesh.triangles, triangles);
                 }
+
+
+                
 
                 poolTable.GetComponent<MeshFilter>().mesh.RecalculateNormals();
 
