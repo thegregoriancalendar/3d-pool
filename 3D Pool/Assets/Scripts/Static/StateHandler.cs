@@ -17,6 +17,8 @@ public static class StateHandler
 
     public static float movementThreshold = 1f; // total movement threshold below which balls will halt and gamestate will progress
 
+    public static List<GameObject> xiJinping = new List<GameObject>();
+
     public static List<GameObject> ballsack = new List<GameObject>(); // list of all balls in scene
 
     public static GameObject[] holes = new GameObject[4];
@@ -27,7 +29,6 @@ public static class StateHandler
 
     public static bool paused = false;
     public static float sfxvolume;
-
     public enum GameState
     {
         SELECT_BALL,
@@ -38,7 +39,7 @@ public static class StateHandler
     }
 
     public static bool player1Turn = true;
-    public static bool singlePlayer = true;
+    public static bool singlePlayer = false;
     public static GameState currentState = GameState.SELECT_BALL;
 
     public static bool hasScratched = false;

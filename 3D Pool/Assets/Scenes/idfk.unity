@@ -323,6 +323,7 @@ MonoBehaviour:
   ball: {fileID: 8823608484245576941, guid: 48104d98e7c42824498044f134601862, type: 3}
   hole: {fileID: 7333513983109135206, guid: eff9b69b739fe3f4eb250714e41a2377, type: 3}
   scoreText: {fileID: 633584897}
+  xiJinping: {fileID: 2100000, guid: ba3b1a7a286f2b7488109078bc9e1c7d, type: 2}
 --- !u!82 &254423687
 AudioSource:
   m_ObjectHideFlags: 0

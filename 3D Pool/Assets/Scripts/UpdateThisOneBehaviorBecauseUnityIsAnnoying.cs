@@ -13,6 +13,8 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
 
     private StateHandler.GameState prevState;
 
+    public Material xiJinping;
+
     private float botTimer;
 
     private Vector3 botDirection;
@@ -37,8 +39,15 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
                 GameObject currentBall = Instantiate(ball, new Vector3(i, 1, j - i * 0.5f), Quaternion.identity);
 
                 Destroy(currentBall.GetComponent<BallSelect>());
-                currentBall.GetComponent<Renderer>().material.color = Color.HSVToRGB(Random.Range(0f,1f), 1f, 0.5f);
 
+                if (i == 4 && j == 4)
+                {
+                    currentBall.GetComponent<Renderer>().material = xiJinping;
+                    StateHandler.xiJinping.Add(currentBall);
+                } else
+                {
+                    currentBall.GetComponent<Renderer>().material.color = Color.HSVToRGB(Random.Range(0f, 1f), 1f, 0.5f);
+                }
                 StateHandler.ballsack.Add(currentBall);
             }
         }
@@ -66,7 +75,7 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
             {
                 StateHandler.currentState = StateHandler.GameState.SELECT_BALL;
                 //StateHandler.player1Turn = !StateHandler.player1Turn;
-                StateHandler.player1Turn = false;
+                //StateHandler.player1Turn = false;
                 botTimer = 0f;
             }
 
@@ -74,6 +83,10 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
 
         if (StateHandler.currentState == StateHandler.GameState.SELECT_BALL) {
             StateHandler.haltBallMovement();
+            if (StateHandler.hasScratched)
+            {
+                deScratch();
+            }
         }
 
 
@@ -84,9 +97,6 @@ public class UpdateThisOneBehaviorBecauseUnityIsAnnoying : MonoBehaviour
         }
 
         prevState = StateHandler.currentState;
-
-
-        // bot logic
 
         if (!StateHandler.player1Turn && StateHandler.singlePlayer)
         {

@@ -70,4 +70,20 @@ public class BallSelect : MonoBehaviour
         //Debug.Log(transform.rotation.eulerAngles.y);
         return false;
     }
+
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (StateHandler.xiJinping.Contains(collision.gameObject))
+        {
+            GameObject miniPing = Instantiate(collision.gameObject, collision.transform.position += new Vector3(1, 0, 1), Quaternion.identity);
+            Destroy(miniPing.GetComponent<BallSelect>());
+            StateHandler.xiJinping.Add(miniPing);
+
+            GameObject miniPing2 = Instantiate(collision.gameObject, collision.transform.position += new Vector3(-1, 0, -1), Quaternion.identity);
+            Destroy(miniPing2.GetComponent<BallSelect>());
+            StateHandler.xiJinping.Add(miniPing2);
+
+        }
+    }
 }
